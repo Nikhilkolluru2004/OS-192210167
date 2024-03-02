@@ -1,0 +1,60 @@
+#include<stdio.h>
+struct Process {
+    int processID;
+    int arrivalTime;
+    int burstTime;
+    int priority;
+    int remainingTime;
+    int waitingTime;
+    int turnaroundTime;
+    int completed;
+};
+void priorityScheduling(struct Process processes[], int n) {
+    int currentTime = 0, completed = 0;
+    float totalWaitingTime = 0, totalTurnaroundTime = 0;
+    while (completed != n) {
+        int highestPriority = -1;
+        int selectedProcess = -1;
+        for (int i = 0; i < n; i++) {
+            if (processes[i].arrivalTime <= currentTime && !processes[i].completed) {
+                if (highestPriority == -1 || processes[i].priority < highestPriority) {
+                    highestPriority = processes[i].priority;
+                    selectedProcess = i;
+                }
+            }
+        }
+        if (selectedProcess == -1) {
+            currentTime++;
+            continue;
+        }
+        processes[selectedProcess].remainingTime--;
+        currentTime++;
+        for (int i = 0; i < n; i++) {
+            if (i != selectedProcess && processes[i].arrivalTime <= currentTime && !processes[i].completed) {
+                processes[i].waitingTime++;
+            }
+        }
+        if (processes[selectedProcess].remainingTime == 0) {
+            processes[selectedProcess].turnaroundTime = currentTime - processes[selectedProcess].arrivalTime;
+            processes[selectedProcess].completed = 1;
+            completed++;
+        }
+    }
+    for (int i = 0; i < n; i++) {
+        totalWaitingTime += processes[i].waitingTime;
+        totalTurnaroundTime += processes[i].turnaroundTime;
+    }
+    printf("Average Waiting Time: %.2f\n", totalWaitingTime / n);
+    printf("Average Turnaround Time: %.2f\n", totalTurnaroundTime / n);
+}
+int main() {
+    struct Process processes[] = {
+        {1, 0, 6, 2, 6, 0, 0, 0},
+        {2, 2, 4, 3, 4, 0, 0, 0},
+        {3, 4, 5, 1, 5, 0, 0, 0},
+        {4, 6, 3, 4, 3, 0, 0, 0},
+    };
+    int n = sizeof(processes) / sizeof(processes[0]);
+    priorityScheduling(processes, n);
+    return 0;
+}
